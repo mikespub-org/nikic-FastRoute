@@ -5,6 +5,7 @@
     verbose="true"
     beStrictAboutChangesToGlobalState="true"
     beStrictAboutOutputDuringTests="true"
+    executionOrder="random"
 >
     <testsuites>
         <testsuite name="FastRoute Tests">
@@ -12,9 +13,9 @@
         </testsuite>
     </testsuites>
 
-    <filter>
-        <whitelist>
+    <coverage>
+        <include>
             <directory>./src/</directory>
-        </whitelist>
-    </filter>
+        </include>
+    </coverage>
 </phpunit>

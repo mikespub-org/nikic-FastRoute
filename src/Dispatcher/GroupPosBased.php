@@ -7,10 +7,8 @@ use function preg_match;
 
 class GroupPosBased extends RegexBasedAbstract
 {
-    /**
-     * {@inheritDoc}
-     */
-    protected function dispatchVariableRoute(array $routeData, string $uri): array
+    /** @inheritDoc */
+    protected function dispatchVariableRoute(array $routeData, string $uri): ?array
     {
         foreach ($routeData as $data) {
             if (! preg_match($data['regex'], $uri, $matches)) {
@@ -18,7 +16,7 @@ class GroupPosBased extends RegexBasedAbstract
             }
 
             // find first non-empty match
-            /** @noinspection PhpStatementHasEmptyBodyInspection */
+            // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedFor
             for ($i = 1; $matches[$i] === ''; ++$i) {
             }
 
@@ -32,6 +30,6 @@ class GroupPosBased extends RegexBasedAbstract
             return [self::FOUND, $handler, $vars];
         }
 
-        return [self::NOT_FOUND];
+        return null;
     }
 }

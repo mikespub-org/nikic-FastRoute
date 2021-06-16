@@ -5,6 +5,7 @@ namespace FastRoute;
 
 use LogicException;
 use RuntimeException;
+
 use function assert;
 use function file_exists;
 use function file_put_contents;
@@ -13,9 +14,7 @@ use function is_array;
 use function var_export;
 
 if (! function_exists('FastRoute\simpleDispatcher')) {
-    /**
-     * @param array<string, string> $options
-     */
+    /** @param array<string, string> $options */
     function simpleDispatcher(callable $routeDefinitionCallback, array $options = []): Dispatcher
     {
         $options += [
@@ -35,9 +34,7 @@ if (! function_exists('FastRoute\simpleDispatcher')) {
         return new $options['dispatcher']($routeCollector->getData());
     }
 
-    /**
-     * @param array<string, string> $options
-     */
+    /** @param array<string, string> $options */
     function cachedDispatcher(callable $routeDefinitionCallback, array $options = []): Dispatcher
     {
         $options += [

@@ -6,6 +6,7 @@ namespace FastRoute\DataGenerator;
 use FastRoute\BadRouteException;
 use FastRoute\DataGenerator;
 use FastRoute\Route;
+
 use function array_chunk;
 use function array_map;
 use function ceil;
@@ -18,26 +19,25 @@ use function round;
 use function sprintf;
 use function strpos;
 
+// phpcs:ignore SlevomatCodingStandard.Classes.SuperfluousAbstractClassNaming.SuperfluousSuffix
 abstract class RegexBasedAbstract implements DataGenerator
 {
-    /** @var mixed[][] */
-    protected $staticRoutes = [];
+    /** @var array<string, array<string, mixed>> */
+    protected array $staticRoutes = [];
 
-    /** @var Route[][] */
-    protected $methodToRegexToRoutesMap = [];
+    /** @var array<string, array<string, Route>> */
+    protected array $methodToRegexToRoutesMap = [];
 
     abstract protected function getApproxChunkSize(): int;
 
     /**
      * @param array<string, Route> $regexToRoutesMap
      *
-     * @return mixed[]
+     * @return array{regex: string, suffix?: string, routeMap: array<int|string, array{0: mixed, 1: array<string, string>}>}
      */
     abstract protected function processChunk(array $regexToRoutesMap): array;
 
-    /**
-     * {@inheritDoc}
-     */
+    /** @inheritDoc */
     public function addRoute(string $httpMethod, array $routeData, $handler): void
     {
         if ($this->isStaticRoute($routeData)) {
@@ -47,9 +47,7 @@ abstract class RegexBasedAbstract implements DataGenerator
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** @inheritDoc */
     public function getData(): array
     {
         if ($this->methodToRegexToRoutesMap === []) {
@@ -59,9 +57,7 @@ abstract class RegexBasedAbstract implements DataGenerator
         return [$this->staticRoutes, $this->generateVariableRouteData()];
     }
 
-    /**
-     * @return mixed[]
-     */
+    /** @return array<string, array<array{regex: string, suffix?: string, routeMap: array<int|string, array{0: mixed, 1: array<string, string>}>}>> */
     private function generateVariableRouteData(): array
     {
         $data = [];
@@ -81,9 +77,7 @@ abstract class RegexBasedAbstract implements DataGenerator
         return (int) ceil($count / $numParts);
     }
 
-    /**
-     * @param array<int, mixed> $routeData
-     */
+    /** @param array<int, mixed> $routeData */
     private function isStaticRoute(array $routeData): bool
     {
         return count($routeData) === 1 && is_string($routeData[0]);
@@ -148,7 +142,7 @@ abstract class RegexBasedAbstract implements DataGenerator
     /**
      * @param mixed[] $routeData
      *
-     * @return mixed[]
+     * @return array{0: string, 1: array<string, string>}
      */
     private function buildRegexForRoute(array $routeData): array
     {

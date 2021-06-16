@@ -5,6 +5,7 @@ namespace FastRoute\RouteParser;
 
 use FastRoute\BadRouteException;
 use FastRoute\RouteParser;
+
 use function count;
 use function preg_match;
 use function preg_match_all;
@@ -13,6 +14,7 @@ use function rtrim;
 use function strlen;
 use function substr;
 use function trim;
+
 use const PREG_OFFSET_CAPTURE;
 use const PREG_SET_ORDER;
 
@@ -34,9 +36,7 @@ REGEX;
 
     public const DEFAULT_DISPATCH_REGEX = '[^/]+';
 
-    /**
-     * {@inheritDoc}
-     */
+    /** @inheritDoc */
     public function parse(string $route): array
     {
         $routeWithoutClosingOptionals = rtrim($route, ']');
