@@ -3,17 +3,18 @@ declare(strict_types=1);
 
 namespace FastRoute\Benchmark;
 
+use FastRoute\DataGenerator;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
+use RuntimeException;
 
 use function FastRoute\simpleDispatcher;
 
-final class RealLifeExample extends Dispatching
+/** @phpstan-type DispatcherOptions array{dataGenerator: class-string<DataGenerator>, dispatcher: class-string<Dispatcher>} */
+final class DispatcherForBenchmark
 {
-    /**
-     * {@inheritDoc}
-     */
-    protected function createDispatcher(array $options = []): Dispatcher
+    /** @param class-string<Dispatcher> $dispatcher */
+    public static function realLifeExample(string $dispatcher): Dispatcher
     {
         return simpleDispatcher(
             static function (RouteCollector $routes): void {
@@ -59,77 +60,39 @@ final class RealLifeExample extends Dispatching
                 $routes->addRoute(['PUT', 'PATCH'], '/admin/category/{category_id:\d+}', ['name' => 'admin.category.update']);
                 $routes->addRoute('DELETE', '/admin/category/{category_id:\d+}', ['name' => 'admin.category.destroy']);
             },
-            $options
+            self::resolveOptions($dispatcher),
+        );
+    }
+
+    /** @param class-string<Dispatcher> $dispatcher */
+    public static function manyRoutes(string $dispatcher, int $routeCount = 400): Dispatcher
+    {
+        return simpleDispatcher(
+            static function (RouteCollector $routes) use ($routeCount): void {
+                for ($i = 0; $i < $routeCount; ++$i) {
+                    $routes->addRoute('GET', '/abc' . $i, ['name' => 'static-' . $i]);
+                    $routes->addRoute('GET', '/abc{foo}/' . $i, ['name' => 'not-static-' . $i]);
+                }
+            },
+            self::resolveOptions($dispatcher),
         );
     }
 
     /**
-     * {@inheritDoc}
+     * @param class-string<Dispatcher> $dispatcher
+     *
+     * @return DispatcherOptions
      */
-    public function provideStaticRoutes(): iterable
+    private static function resolveOptions(string $dispatcher): array
     {
-        yield 'first' => [
-            'method' => 'GET',
-            'route' => '/',
-            'result' => [Dispatcher::FOUND, ['name' => 'home'], []],
-        ];
+        $generator = match ($dispatcher) {
+            Dispatcher\GroupCountBased::class => DataGenerator\GroupCountBased::class,
+            Dispatcher\CharCountBased::class => DataGenerator\CharCountBased::class,
+            Dispatcher\GroupPosBased::class => DataGenerator\GroupPosBased::class,
+            Dispatcher\MarkBased::class => DataGenerator\MarkBased::class,
+            default => throw new RuntimeException('Unsupported dispatcher'),
+        };
 
-        yield 'last' => [
-            'method' => 'GET',
-            'route' => '/admin/category',
-            'result' => [Dispatcher::FOUND, ['name' => 'admin.category.index'], []],
-        ];
-
-        yield 'invalid-method' => [
-            'method' => 'PUT',
-            'route' => '/about-us',
-            'result' => [Dispatcher::METHOD_NOT_ALLOWED, ['GET']],
-        ];
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function provideDynamicRoutes(): iterable
-    {
-        yield 'first' => [
-            'method' => 'GET',
-            'route' => '/page/hello-word',
-            'result' => [Dispatcher::FOUND, ['name' => 'page.show'], ['page_slug' => 'hello-word']],
-        ];
-
-        yield 'last' => [
-            'method' => 'GET',
-            'route' => '/admin/category/123',
-            'result' => [Dispatcher::FOUND, ['name' => 'admin.category.show'], ['category_id' => '123']],
-        ];
-
-        yield 'invalid-method' => [
-            'method' => 'PATCH',
-            'route' => '/shop/category/123',
-            'result' => [Dispatcher::METHOD_NOT_ALLOWED, ['GET']],
-        ];
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function provideOtherScenarios(): iterable
-    {
-        yield 'non-existent' => [
-            'method' => 'GET',
-            'route' => '/shop/product/awesome',
-            'result' => [Dispatcher::NOT_FOUND],
-        ];
-
-        yield 'longest-route' => [
-            'method' => 'GET',
-            'route' => '/shop/category/123/product/search/status:sale',
-            'result' => [
-                Dispatcher::FOUND,
-                ['name' => 'shop.category.product.search'],
-                ['category_id' => '123', 'filter_by' => 'status', 'filter_value' => 'sale'],
-            ],
-        ];
+        return ['dataGenerator' => $generator, 'dispatcher' => $dispatcher];
     }
 }
