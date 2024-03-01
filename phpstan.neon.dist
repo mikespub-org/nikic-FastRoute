@@ -1,15 +1,10 @@
 parameters:
-    level: 6
+    level: max
     paths:
         - benchmark
         - src
         - test
 
     ignoreErrors:
-        # We don't really want to call the constructor here, so this is fine
-        - '#FastRoute\\Test\\DummyRouteCollector::__construct\(\) does not call parent constructor#'
-
-        # These are false-positives
-        -
-            message: '#Variable \$i might not be defined.#'
-            path: 'src/Dispatcher/GroupPosBased.php'
+        # We're marking this as deprecated, there's no point in alerting ourselves here...
+        - '#Call to deprecated function FastRoute\\(cached|simple)Dispatcher.*#'
